@@ -70,9 +70,18 @@
         transition: 0.3s ease;
     }
 
+    .game-count {
+        margin-top: 8px;
+        font-size: 0.9rem;
+        color: rgba(255,255,255,0.4);
+        letter-spacing: 1px;
+    }
+
     .controls {
         display: flex;
-        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
         margin-bottom: 50px;
         margin-top: 20px;
     }
@@ -98,6 +107,34 @@
         box-shadow: 0 0 30px rgba(0, 243, 255, 0.2);
         outline: none;
         transform: scale(1.02);
+    }
+
+    .category-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+        max-width: 900px;
+    }
+
+    .tab {
+        padding: 8px 20px;
+        border-radius: 50px;
+        border: 1px solid var(--glass-border);
+        background: var(--glass);
+        color: rgba(255,255,255,0.6);
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        backdrop-filter: blur(10px);
+    }
+
+    .tab:hover, .tab.active {
+        border-color: var(--accent);
+        color: var(--accent);
+        box-shadow: 0 0 12px rgba(0, 243, 255, 0.2);
+        background: rgba(0, 243, 255, 0.08);
     }
 
     .grid-container {
@@ -147,6 +184,20 @@
         transform: scale(1.1);
     }
 
+    .card-badge {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: var(--accent);
+        color: #000;
+        font-size: 0.6rem;
+        font-weight: 800;
+        padding: 2px 8px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
     .card-info {
         padding: 15px;
         text-align: center;
@@ -162,6 +213,25 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+
+    .card-category {
+        font-size: 0.7rem;
+        color: var(--accent);
+        margin-top: 3px;
+        opacity: 0.7;
+    }
+
+    .section-label {
+        grid-column: 1 / -1;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 1rem;
+        color: var(--accent);
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        padding: 10px 0 5px;
+        border-bottom: 1px solid rgba(0, 243, 255, 0.2);
+        margin-top: 10px;
     }
 
     .footer {
@@ -192,237 +262,394 @@
     <header>
         <h1>OMNIX</h1>
         <div class="subtitle">Premium Gaming Hub</div>
+        <div class="game-count" id="game-count"></div>
     </header>
 
     <div class="controls">
-        <input type="text" id="searchBar" placeholder="Search Games..." onkeyup="filterItems()">
+        <input type="text" id="searchBar" placeholder="Search Games..." oninput="filterItems()">
+        <div class="category-tabs" id="category-tabs"></div>
     </div>
 
     <div class="grid-container" id="game-grid"></div>
 
     <div class="footer">
-        Press <b>ESC</b> to Panic Swap to Google Drive
+        Press <b>ESC</b> to Panic Swap to Google Drive &nbsp;|&nbsp; <span id="visible-count"></span> games shown
     </div>
 </div>
 
 <script>
     const games = [
-        { name: "Plants vs Zombies", url: "https://script.google.com/macros/s/AKfycbyyEXD9_h6Vsie5eSBmDPCD1rAgPDa6O4kKxn9eyRMkzEsohm_7sMFRzs_h411gQEPx2w/exec" },
-        { name: "Subway Surfers", url: "https://mysticgames.netlify.app/games/subway/" },
-        { name: "Strong Man Simulator", url: "https://script.google.com/macros/s/AKfycbxLkugSSEdQm0qJQ4PZWRce6p8pKpuPdLIFeivG0cMt-QmjEjedBCarzz_kd2tlvxzs/exec" },
-        { name: "Steal a Brainrot", url: "https://script.google.com/macros/s/AKfycbytsGAlf3lPg4Po7HvAheHvyJKxYRA4ZYPUGjjjMpZafajZs3F5pu7E5BekDXlNhRHUFw/exec" },
-        { name: "Grow a Garden", url: "https://script.google.com/macros/s/AKfycbwK_YDMKEccZyVOz_fpe66G4Je4VyFPdT10OdaKpM699Utzbq41n2m6OXqAzpX0oqrLTA/exec" },
-        { name: "Snow Rider 3D", url: "https://script.google.com/macros/s/AKfycbw5Z-Ryg_JfIIDYH7pzzPKXlr2tN0HCw-tT_ZvxBGDPsDDY41ewPVneVeLzelfpnBab/exec" },
-        { name: "Crash Carts", url: "https://script.google.com/macros/s/AKfycbx63iRe5mtf5PQGIn_eGwKePxCA1iU6w-YApn57Mh4phi2ZB-G-GCJA1YTV9jKrwoqb/exec" },
-        { name: "Nugget Clicker", url: "https://script.google.com/macros/s/AKfycbzjgnGGeTNL2DTjJzVx3WGvsLjEyA47O6xYss-ijTLWWwrQv9siK9Gn_QqNDlDkrc27/exec" },
-        { name: "Cookie Clicker", url: "https://script.google.com/macros/s/AKfycbxGM35J29NkO-2LYjxWj_cA9IUaaXypkUy-LqXyLRbGTz0R6lXmAEapz1STN1jlTIRavw/exec" },
-        { name: "Pixel Shooter", url: "https://script.google.com/macros/s/AKfycbzBG3iwMy-Kdz3gY7oQSBugoIGwmA-IWITNrA8j1vX5ytZQHcKTS-61QLSpA5ixBJ2U/exec" },
-        { name: "1v1 LOL", url: "blob:https://1009047778-atari-embeds.googleusercontent.com/aff94361-27e5-4c58-b0e9-d72815885587" },
-        { name: "Bitlife", url: "https://script.google.com/macros/s/AKfycbz7YQScNBizgtxyn4DO7v12IQTI4nqwQc8srdlN30uZWw5BxWdIr2TPoMRC_8yQQKC7/exec" },
-        { name: "Cat Clicker", url: "https://script.google.com/macros/s/AKfycbyZC8Co483g482FRlWQrt5RGrDErAhWbwboKbvJW26UflpwUdNs5XlLObHrDjEszGRV4w/exec" },
-        { name: "Pizza Clicker", url: "https://script.google.com/macros/s/AKfycbxYgrQX9Czp4Tt9bYdMCxZ4gAQOtTBECYvroKJ7r48kTXs1vXa6xTOXYFYhcRNIawzK/exec" },
-        { name: "Pixel Gun 3D", url: "https://storage.googleapis.com/test-41376.appspot.com/pga2.html" },
-        { name: "Space Bar Clicker", url: "https://script.google.com/macros/s/AKfycbzZN3jRO2eOgcp622_W0GYAeArMio71AmlfRhF8yFucC5hEbRnDFZ3NLiN8peebEdlhWw/exec" },
-        { name: "Poop Clicker", url: "https://script.google.com/macros/s/AKfycbzDdetO4NX5twY1pU389ZUG2M9DERmoV0DeJNJS7SvzVIdA1WUaBeIeHo_CfQVNw2gq6g/exec" },
-        { name: "Clicker Heros", url: "https://script.google.com/macros/s/AKfycbxiYJVxz4HPt3JTbXtgX7swXZ734vV_Wr4QcqmQrBMydobF0wIOH_eqQx9HFVCkH4cX/exec" },
-        { name: "Duck Clicker", url: "https://script.google.com/macros/s/AKfycbysJKtWMnsbhg8q1RmnOEAr2U89XMzTL2Ca0w9lqKdoi7dx9QZbwsqzQdCcCBmLUtiI6A/exec" },
-        { name: "Spider Man", url: "https://script.google.com/macros/s/AKfycbwAoMJxFkkCGbz6H0x2lq5uVhb1vvQRKraex1znydX5Gm0jWse3HWUTvdU34ghoPqQauQ/exec" },
-        { name: "Slope 2", url: "https://sites.google.com/view/slpe-2-player/" },
-        { name: "Slither IO", url: "https://script.google.com/macros/s/AKfycbwXhPAppqZUy69d6b26B3Z6daQdZmzPsiaSsywQseSBMh94FLNnVTmupJqtonwt9oaQLw/exec" },
-        { name: "Paper IO", url: "https://script.google.com/macros/s/AKfycbwNxCzUuQVmLRWTwYK2D4yTqpWg2O-qge8BwCkxhLmqWd1DtXynwJXPEDClPt7ERZr-/exec" },
-        { name: "Eaglercraft", url: "https://www.google.com/url?q=https%3A%2F%2Fmysticgames.netlify.app%2Fgames%2Feaglercraft%2Fdragonx_v4%2520%281%29&sa=D&sntz=1&usg=AOvVaw2sCePdWiQq_ffspAzJVNwR" },
-        { name: "Noob Miner", url: "https://script.google.com/macros/s/AKfycbxkvPO4mEcWEk5a9TgEuR7qyiYZs7hL80XF5pwK8QMKHqmA7qUqxvIePB3PF9c3Bqc93w/exec" },
-        { name: "Zombie Sandbox", url: "https://script.google.com/macros/s/AKfycbxutg4sKZIHB5Nu6jyZ1PcIze8YSbsHFDx8xJraC4VHAfJOu4If-Tk7swki5Mia_IGY/exec" },
-        { name: "Drift Boss", url: "https://script.google.com/macros/s/AKfycbwAOi2tPbjzeWDkigfZMIPEGubYxz2la_qjxJyydNZyjwgbqsv9mv05g7tdmLHdvdaw/exec" },
-        { name: "Hole IO", url: "https://script.google.com/macros/s/AKfycbwSQ0aXrXdz23Z0adlljZLtt6EGzD7max6U15OnUFBxhQmht6KK7l7RzsVo2wOdkoXR/exec" },
-        { name: "Snow IO", url: "https://script.google.com/macros/s/AKfycbxa3OjBw8KWer3YhEXl1wxoe1uQKNo-wgGuqPO3NTndX566TTs10-ioXopEPitTvE-B/exec" },
-        { name: "Death Run 3D", url: "https://script.google.com/macros/s/AKfycbwqW4kBl41CHKxAW1aOCzUllnCGaK6LDmkZfAZH_dJzu646nns5bRfn0oqa5Zpq9zEI/exec" },
-        { name: "Madalin Car Stunts", url: "https://script.google.com/macros/s/AKfycbwkhPzDs1efaiOPjYhNnVKMinAE3jONqLhZa8Eu5oGeqrQaDQtp-glIhnYrXAem5E8Dqw/exec" },
-        { name: "Granny", url: "https://storage.googleapis.com/test-41376.appspot.com/gn.html" },
-        { name: "FNAF", url: "https://script.google.com/macros/s/AKfycbxJNtrKTWPCSIo9tOqq53G2xqoQCIPDTYUsVOT79Eqk8I7C5cQkGdDnj0jzlNHa7bvs3g/exec" },
-        { name: "Slender Man", url: "https://script.google.com/macros/s/AKfycbzD78lGmoq37iyrMDWZavBLxIRpQ_HmutXT9arsozaDkYaHVSfk7YliEmd3EL4nXM_4Bw/exec" },
-        { name: "Gun Night", url: "https://script.google.com/macros/s/AKfycbxIkkCWh4kp5QZwqA8qXEnb2XaFgXTErieBl4CMrLPYHqTDtl21HiF4373fWf9hInDNBQ/exec" },
-        { name: "Ahoy Raft", url: "https://script.google.com/macros/s/AKfycbyzVkBvWyVbdMcOo68Fh2bzuKaGAPmJdypz7toaDyxYMoctbxh7cgg6DC-LGUdA-LZ0Ow/exec" },
-        { name: "NFL Madden", url: "https://script.google.com/macros/s/AKfycbyeK7PhBwy3ieGSllnEILb9qSdGPmt2vheRIPImM2VOllSJAk-0Y82i1OVGl7qxWda3ZA/exec" },
-        { name: "Bank Robbery 2", url: "https://bav1.wadmc.site.cdn.cloudflare.net/pages/other/interpreter/index.html?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/439.html" },
-        { name: "Funny Shooter 2", url: "https://storage.googleapis.com/test-41376.appspot.com/fs2.html" },
-        { name: "Build a Plane", url: "https://script.google.com/macros/s/AKfycbwzSeRTcepa4gSddtkqyNQgNIxsXgbtpvOwBH_iHFqTPuI4LDTOREP_BcbCyO48fn6aew/exec" },
-        { name: "Feed a Brainrot", url: "https://script.google.com/macros/s/AKfycbyGbCbN5nPB5TUr52E5i_9LV_tSmFUNZKdmgUSaKMMBsoHkEnrS7HBPgftiRn0xbOEd/exec" },
-        { name: "Roblox Dig a Hole", url: "https://script.google.com/macros/s/AKfycbx3gCQI1WeQKUBJya7pn1_KoiqnENV_ah_64-TKmMwym15oLBa56oFHunXsWymnzQ6cyg/exec" },
-        { name: "Roblox Barrys Prison", url: "https://script.google.com/macros/s/AKfycbxRR9j9VoEVe3ftwVkqAslFNtnJ1UUWj8hLc51en9qR8fsVz2gho9geBFjasY0IV8gJBQ/exec" },
-        { name: "Minecraft Raft", url: "https://script.google.com/macros/s/AKfycbwpQHXN2419GU1OjX9m-MoQwpIeM-ZS7r2UE3NiqJ_GqPinDaFWAd_FJ_i0HZ_pxU/exec" },
-        { name: "Car King", url: "https://script.google.com/macros/s/AKfycbz6GTepbaULO9dEqHBzfb2Rm0C3pdSKcKnaOGr6qAWXxoppLkkA65v3vTgsDS4o7W56aQ/exec" },
-        { name: "TABS", url: "https://script.google.com/macros/s/AKfycbx-20sK1Vv2W5l1l4NnyzA67dCLHiWUNOnwlGioOx9yKXkauoZt5H7l6il14wlLS9hI4A/exec" },
-        { name: "Drift Runners", url: "https://script.google.com/macros/s/AKfycbwv5YaezxydtxaDvf3N6K_f27lSOQaOUHtxE0slEpqcgRn8S0O-B4FDICb_xLu-yMEM_A/exec" },
-        { name: "Wall Braker Obby", url: "https://script.google.com/macros/s/AKfycbwpQsaC46wfjtzpPEWddx4lMsp7Zc-BSeQlbfEFhSXcAhCWI57_S8gwnye76ZSbFiVR/exec" },
-        { name: "Football Bros", url: "https://script.google.com/macros/s/AKfycbxjYzXDX0iopyVPSDgG8_sTlQPpjv5KYMdsOtLXzYrQYdHPmHdswUb5NTXedQ3RK8XyoQ/exec" },
-        { name: "Basketball Stars", url: "https://script.google.com/macros/s/AKfycbwzYMDDcdDUAvEP7iO6OdRk-5_oUp6vYvDdyEEz8tTOzWi5y4-Qf3vQ6TBoZuc9UYVcLg/exec" },
-        { name: "Pokemon Emerald", url: "https://script.google.com/macros/s/AKfycbydeGJlDAWwZCE5PY08zOOmx37ItizsHHLSxDEwAEOsGgT7n9rqb4V1Anelns4sezU6/exec" },
-        { name: "Pokemon Fire", url: "https://script.google.com/macros/s/AKfycbzEbzXxS4zazELSeJtXyLaPrJhPMEJsh2lACeG_0Ky7xTL0ewG0m1iJeU2d1K0OmeGOug/exec" },
-        { name: "Pokemon Ruby", url: "https://script.google.com/macros/s/AKfycbypOitjGD19RPkCYQ8vgJzFfmtMtnl3naBwSw9OhpqtalZs0k3Pri3nL7X76qUwdV9GGQ/exec" },
-        { name: "Retro Bowl", url: "https://bav1.wadmc.site.cdn.cloudflare.net/pages/other/interpreter/index.html?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/33.html" },
-        { name: "Retro Bowl College", url: "https://bav1.wadmc.site.cdn.cloudflare.net/pages/other/interpreter/index.html?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/34.html" },
-        { name: "Cut The Rope", url: "https://script.google.com/macros/s/AKfycbzC5BJ124UUKkQqKJwi6D_xOIz7Vy0fHyc1Fl8NEnSUtRXD-AUGnkKt3u1bugFLT5s/exec" },
-        { name: "Geometry Dash", url: "https://mysticgames.netlify.app/games/geometrydash/" },
-        { name: "Red vs Blue", url: "https://storage.googleapis.com/test-41376.appspot.com/rvsb.html" },
-        { name: "Mine Clicker", url: "https://script.google.com/macros/s/AKfycbwRel1nwQUwbO-I9U1oZxP-XbJ4T8xK7RQmYzj7-8b21DJhqzWkUiePAhx5q6pZ--3e/exec" },
-        { name: "Roblox Car Training", url: "https://script.google.com/macros/s/AKfycbwHG-nBpdYtwW3DS-0WTVa191rByTmy1hB6Nfnbu8210Qf0GJDlQTws79TL9exSrAA4Rw/exec" },
-        { name: "Time Shooter 2", url: "https://storage.googleapis.com/test-41376.appspot.com/ts2.html" },
-        { name: "Time Shooter 3", url: "https://storage.googleapis.com/test-41376.appspot.com/ts3.html" },
-        { name: "Noob Puncher", url: "https://script.google.com/macros/s/AKfycbzzorzoC5g9vqw48jw3df62wUl4AL5CB02OvDmuS1jNr9LgORUaLsn4gJeCB96AZMg1/exec" },
-        { name: "Blade Ball", url: "https://storage.googleapis.com/test-41376.appspot.com/blb.html" },
-        { name: "CS Strike", url: "https://storage.googleapis.com/freezenova/all/2024/unity2/fps-strike/pre-gg.html" },
-        { name: "Crazy Cattle 3D", url: "https://bav1.wadmc.site.cdn.cloudflare.net/pages/other/interpreter/index.html?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/164-temp2.html" },
-        { name: "Super Market Sim", url: "https://storage.googleapis.com/freezenova/all/2025/unity/supermarket-simulator/pre-gg.html" },
-        { name: "Chic Nails Salon", url: "https://script.google.com/macros/s/AKfycbzhUihvpgflnIFAvQ8r2lmGBtDko4agAJZDOnhv34GCVgl5fTA155Znooe842QFrcFP/exec" },
-        { name: "Super Mario Run", url: "https://script.google.com/macros/s/AKfycbyvVfKl6U8WIVvyCjiU0bTUncbb_pYAdYbJGrvPFL8g4H3brthvqFi2uKK6YW5nTJepcw/exec" },
-        { name: "Gun Spin", url: "https://script.google.com/macros/s/AKfycbw3eTm2fi2WtzFV9x4H30gtzkoHUIIhH3saOGup-TC4MImYcKeVv5hEscrVwzwJ5vMXwg/exec" },
-        { name: "A Small World Cup", url: "https://script.google.com/macros/s/AKfycbwSK5IqLXbZppMz9znIJVycB4BZCHodE3uSgUF4C1fReEqmMSDYua81Ew7Rp-Cn85gojg/exec" },
-        { name: "TABS 2", url: "https://script.google.com/macros/s/AKfycbzMjY-ZtNYvvuJQryRtxbBEGL3JoIeGfnoawa-wCBbr8TS-OKaY0AJcjZDUQ72dC_GK/exec" },
-        { name: "Fishing IO", url: "https://script.google.com/macros/s/AKfycbzZJhJIeHFv_-I9PXF5xA-MA115srBLxJu4hxtMP4z0hGHSBcMzBNydUT5UxfmhSNQq/exec" },
-        { name: "Roblox Grimace Shake", url: "https://script.google.com/macros/s/AKfycbwPLnRcoqGbOipLt2as1aFfCgIKNE--rJbTIoVp6lzGhVThb_t5I7IChBn93Ndx-ZNp/exec" },
-        { name: "Poly Track", url: "https://script.google.com/macros/s/AKfycbzOmulSCFb0CwkaIrhIBdqglMVAfxQppFmVZmp2cp8-eHLj0j_LjbQtEhNyTClffFte/exec" },
-        { name: "Burrito Bison", url: "https://script.google.com/macros/s/AKfycbw5vt-wH3HFzY0kmnIwl6B30074jSz-oKtqRQ5L1EFsGbq9-g5h_SSP0qaTMf0M_RH1/exec" },
-        { name: "Brawl Stars Laser", url: "https://script.google.com/macros/s/AKfycbzACPj2zsVeDEC6L2t46-PPjX179hOg93eCD5lwrMnhHD0CnsNK0AlOTSKT1WKDlyDF4A/exec" },
-        { name: "Madalin Cars 2", url: "https://kyleissosigma.global.ssl.fastly.net/projects/madalin-stunt-cars-2/index.html" },
-        { name: "Mr Car Racing", url: "https://script.google.com/macros/s/AKfycbxeLEpzZpAIPrMSkB1dCTPkLcn8wcNTVCw0wfN2q_jOfXWQ3GhcrqygfgQq1t2yyK6tCQ/exec" },
-        { name: "Eggy Car", url: "https://script.google.com/macros/s/AKfycbxGFiHgVNVoous7yjguN7bcuwa6lejCHgh6V1weh1vNalyCzpMmaMH9NhTisNSqkUo3/exec" },
-        { name: "OvO", url: "https://script.google.com/macros/s/AKfycbyDZOJq86UIFlMkKfvZtA_Sv86sKooVRpwVFS2rb38TOT8ExCt3PfR1Y5UAveVuVGlQLw/exec" },
-        { name: "OvO 2", url: "https://script.google.com/macros/s/AKfycbx9z-8dgnQm5HtguTN1a6ij3Dcb_op9-d9dsT4CDOt4IVOc7JSvGt3k1PS3-083XIEF/exec" },
-        { name: "Riddle School", url: "https://script.google.com/macros/s/AKfycbyBMzbST-uTVoOBVyLwbqs7LeloEnSkKiP4Cik0DmPAcVR7Oqq-BzXdvrOzNR6Uwl4MJQ/exec" },
-        { name: "Riddle School 2", url: "https://script.google.com/macros/s/AKfycbxAxmSYav_FxW2KK6Uq4gGNAkqUdVghvBbB7RGGp94sgFIyB0zaNQwMmtyXUrA7Uh80yQ/exec" },
-        { name: "Riddle School 3", url: "https://script.google.com/macros/s/AKfycbwa5pPN4jqxL2C_SbGRkUUm23NwS3SB0XmUkqFNp0mEjCMy_lphUCFHXzb5ZsOUf9drNQ/exec" },
-        { name: "Riddle School 4", url: "https://script.google.com/macros/s/AKfycbwGuLeqEsgE3zoFtlvDy6eJ9dwvTz7tJIubeYTMXqUKG-cNMrlgRteuJM1QxCDj_6gN/exec" },
-        { name: "Super Mario 64", url: "https://script.google.com/macros/s/AKfycbyB8Cg09IyL5iA01VRMcp6GXWBsHJDyytzuovDyiHdgIUmtHuNM7x27VlBnJjYt26F-/exec" },
-        { name: "Governor of Poker", url: "https://script.google.com/macros/s/AKfycbypfdD_P9HVmO5Ms9mJZX7xl4IQBSsFYdUqZoJhR9f97McSR9B1wqvUc4YhoORgScn5/exec" },
-        { name: "Car King 2", url: "https://script.google.com/macros/s/AKfycbxQuqMuGYqOJSyYwUL5vYn1E3xCTjM7DAQZnhnKyYVmhH_2mNQS7INnwJkwr7l7T9GC/exec" },
-        { name: "DOOM", url: "https://script.google.com/macros/s/AKfycbyxLM58t1oGIyqp09GNTAGBqUBaFg7A9nY5lLwS45Zg2z63ax0EmnhHCXW_aHhEpdFcqg/exec" },
-        { name: "DOOM 2", url: "https://script.google.com/macros/s/AKfycbx61mSm2aEx_wwEQB66hIGUZm8hV2dBZvo2QXcabpXvc0r25c22pW-pdE8tmxBjOWcWCw/exec" },
-        { name: "Vex", url: "https://script.google.com/macros/s/AKfycbxwyDsC49pauwYS59k4k10ptEAWo-6qgJf2nyvPt3i52bikDw98aFuDgvSPRWaIsnr8/exec" },
-        { name: "Ant War", url: "https://script.google.com/macros/s/AKfycbwTCDauLkMPclvbdLzVCcJlUN0ZJJhW1WWX16471JKSvDvemRPf1d_koYpXxbgo5xtv/exec" },
-        { name: "Bloons TD 5", url: "https://script.google.com/macros/s/AKfycbzSjvvBl4oIbQbsdQ6wORkEPqBumZKhlNUW3FirGHuAIe6EPZ_QGuF4N0TqjL0ECFoo/exec" },
-        { name: "Brawl Stars", url: "https://script.google.com/macros/s/AKfycby2-8wV6Z0j1rs8FEOpgLh45K2Psh7qsbQX9PFQqvuVhkiIxgbYZCQbnYTQvb6KyiGG/exec" },
-        { name: "Theme Hotel", url: "https://script.google.com/macros/s/AKfycbwrJdMjGr6QgtCqRECx-sah1QhwG_uDl05wIqxLiBciZkSh2bheRU40RjCAczlxBJwuNw/exec" },
-        { name: "Tiny Archer", url: "https://script.google.com/macros/s/AKfycbwewqfKyRlPVStl7DY10aR-AbTtoXNZzFxi_TEgtOfJacKP6zplkmCDV5C8Ns7NKowl/exec" },
-        { name: "Miami Shark", url: "https://script.google.com/macros/s/AKfycbwcOrx811OvPzstvQr6A5KOKznvdBG_acIb69QrkqZf9SS6Amq6JNWlHFFVHEGAAgeylQ/exec" },
-        { name: "Roblox Obby", url: "https://script.google.com/macros/s/AKfycbx-uaFWRwY1q4Gv7pRrd9PR3zbbmsKV5PTGPQZ11-u3EWCiD4xeM2V3_1JBvmJQNxSshw/exec" },
-        { name: "Color Switch", url: "https://script.google.com/macros/s/AKfycbwWWBtavXiMCq399BK9oR49x9YwZ3TnN4vnTZ5fhELKP8yqc9_mqT25hT6PdwjD_hMdmA/exec" },
-        { name: "GTA 4", url: "https://storage.googleapis.com/freezenova/all/2023/unity2/gta-simulator/pre-gg.html" },
-        { name: "Stickman GTA", url: "https://storage.googleapis.com/freezenova/all/2024/unity3/stickman-gta-city/pre-gg.html" },
-        { name: "Snow Rider 2", url: "https://unblocked-games.s3.amazonaws.com/games/2025/unity2/snow-rider-3d/pre.html" },
-        { name: "War Strike", url: "https://storage.googleapis.com/freezenova/all/2024/unity3/warstrike/pre-gg.html" },
-        { name: "Car King 3", url: "https://storage.googleapis.com/freezenova/all/2024/unity3/survival-karts/pre-gg.html" },
-        { name: "Jaydens Bus", url: "https://storage.googleapis.com/freezenova/all/2021/2/school-bus/pre-gg.html" },
-        { name: "Blob Man Runner", url: "https://script.google.com/macros/s/AKfycbxzSGHk_3h5kMq-nWnMw-klXqPCvXAWtnetko4sja__qk43JO5f5bBJXkyhkt3gFDsG/exec" },
-        { name: "Basketball Bros", url: "https://script.google.com/macros/s/AKfycbxUfaDSpH-0SJL0WPKt38JY7OOOGMmtpY9JTSbL8pvtjxS7jSpNHHu6MdZgWUshIU00Kw/exec" },
-        { name: "Ragdoll Archers", url: "https://script.google.com/macros/s/AKfycbxNbvNHQi6AaM1h7e1N4T2gkDUR3CMeqDfto6yUKf4DKrOELGCCT4maR8rwUvL3EAXg/exec" },
-        { name: "Legend of Zelda", url: "https://script.google.com/macros/s/AKfycbzu7JPsUyqahRNyoVAWYD-uIEpV5FNs0akJEM0EwNV_ToMOxVpNPgW8huZ4tsKfKLM7/exec" },
-        { name: "Body Drop 3D", url: "https://script.google.com/macros/s/AKfycbyXOw6qzM51ssGj_M9IbqU2ecyQivgppEfFXnGRtWv2fa88YqEgVxfE1pA3x-Tf1jfxTA/exec" },
-        { name: "Backflip Maniac", url: "https://script.google.com/macros/s/AKfycbyExxCazbrnnLXvfNagILoQmILcNwXIkg8QDmtAo2Q6ZoI9KfUar3j7jjbdi3mE_km8/exec" },
-        { name: "Pipe Riders 3D", url: "https://script.google.com/macros/s/AKfycbwEVfIX4lJOqfq3QSoLcjMR42I7zeC1_Njr8LGucBGcaVBp5MsfC96SFhXGnaOwfuCX/exec" },
-        { name: "Bottle Flip 3D", url: "https://script.google.com/macros/s/AKfycbzwDflD6NVq9iPdEWsRyyI4iqR_k47P-BK4sn_vpYaZGsPJz3zDYRDy45azzYiPnYs/exec" },
-        { name: "Slope City", url: "https://script.google.com/macros/s/AKfycbyendSzfWzjivGUAoNgH5QDpJIxJDyJvSYwXWxcV_8gl9xkdTMV2BvDpjiWNw5pGaVT/exec" },
-        { name: "Block Blast", url: "https://script.google.com/macros/s/AKfycbxZvtI5agrSjt2PR9Bi4M0UrukDLv22m04S03neCz_La2RwnISHUDQ48n6hlYayZvIs/exec" },
-        { name: "Binding of Isaac", url: "https://script.google.com/macros/s/AKfycbx1-ahIchbUqDQdqB5GJ2-ZxlbPLz1lz7ohzlqUZ41JUrAnGTIPjgLaASGqqV1ToAuZ/exec" },
-        { name: "FNAF 3", url: "https://script.google.com/macros/s/AKfycbyVdPAG4aRGh5tmBwKEZthKmaqO12GTD-h-C1Do6ICbR3ZEj5ic1aJQ2e4Im2pxcWLf/exec" },
-        { name: "Stickman Archero", url: "https://script.google.com/macros/s/AKfycbxQMjTKES5CMpXfWBSXOQvk0qSCqIMpeT_zTPIshM-_XuAdBdi2lm2M9UfLdjHCSSg3/exec" },
-        { name: "Cooking Fever", url: "https://script.google.com/macros/s/AKfycbyjI0zmcSCEH1KYPHLRli9aaHyQettbfiqOyaKVDeJn8rccfLOQYK6pJze4xP-EFJKg/exec" },
-        { name: "Gacha Life", url: "https://script.google.com/macros/s/AKfycbwpsiFvcV6VcCA2a7HCMZd4FsuW9rw53GS08ItGe6CXqWkkrVrl1yV2GW-E3JGYOzkcvQ/exec" },
-        { name: "Tag", url: "https://bav1.wadmc.site.cdn.cloudflare.net/storage/ag/g/tag/" },
-        { name: "Space Wave", url: "https://bav1.wadmc.site.cdn.cloudflare.net/pages/other/interpreter/index.html?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/117.html" },
-        { name: "Kart Bros", url: "https://script.google.com/macros/s/AKfycbxb8isaXXwqY7h3OqafbfonnaOEmyfyK8ZQoMvgT-HGwUSfpJoK5Aim1Ca3fvKvEqxj/exec" },
-        { name: "Drive Mad", url: "https://bav1.wadmc.site.cdn.cloudflare.net/pages/other/interpreter/index.html?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/35.html" },
-        { name: "Forg Clicker", url: "https://script.google.com/macros/s/AKfycbzQaAZtrcJFjT3vW7NBFYusYqo6WuBjQy_y0Ky2qpW2Xml3PHAv4sJN3SHNyp89JMOc/exec" },
-        { name: "Fall Guys", url: "https://script.google.com/macros/s/AKfycbxzGXZ-dYcADWPNv7OSO6OdaFl8sJtBNY8J1KO5EQ33_I37NN0nQkaej4HqNCAkvxHHqA/exec" },
-        { name: "Drift Hunters", url: "https://script.google.com/macros/s/AKfycbw8iHPqdVFEzquUYbNxFVAu1Tw4Nri5SWMRLdP_c7a84vCOHVG7YUWuhjSVptg1SVHr/exec" },
-        { name: "Sonic Revert", url: "https://script.google.com/macros/s/AKfycbzBAwdrT4yM1Hd7ZZZh8uHlWcfaGqq2wuP6CXzRYrI25JI-1v42AyvMtIeiFfelHuV3jA/exec" },
-        { name: "Bloons TD", url: "https://script.google.com/macros/s/AKfycbzKR69hQK7HutG9tRM2cEM9H8vEX8xwkPDTeEjeju7G_P2Xf83RYqBoNT2S9NPo7NWN/exec" },
-        { name: "Bloons TD 2", url: "https://script.google.com/macros/s/AKfycbxI5KGOnqExl7GEpiCd5XXr9PXBMkGhDLWnOQfEuXRjmXom-nUzLjOXfP4iwAYUvbE/exec" },
-        { name: "Bloons TD 3", url: "https://script.google.com/macros/s/AKfycbzRkRFh3xH_YzLqtvFVsKcPOdqkcps9umH96kwECqmzugE1XkxYo6ryhCKD1m7JkR0-rw/exec" },
-        { name: "Bloons TD 4", url: "https://script.google.com/macros/s/AKfycby2trsng3jMdXZGJn1BQjbqYbooUtnPL3dT1EP9yp7GQRHsUSWLSGyZAUB62jIicJek6A/exec" },
-        { name: "Squid Game", url: "https://firebasestorage.googleapis.com/v0/b/test-1e83a.appspot.com/o/sg.html?alt=media&token=3a831154-d98f-4ee8-b134-6147678bdef8" },
-        { name: "Sushi Cat", url: "https://script.google.com/macros/s/AKfycbxklkIQr8XmD1Qop6uHXJdSXks7pLz1zBMg7k7jPzOTdZChInaDEaQbzN6YNCZbIbbLzQ/exec" },
-        { name: "Stickman Fighter", url: "https://script.google.com/macros/s/AKfycbw3hd0GBBIL0fD_54SGZZFEfCVUMCXP0tUZMq6OjDiXeNnUQ97rt70cUpDfkmgSGtErmQ/exec" },
-        { name: "Pixel Archer", url: "https://script.google.com/macros/s/AKfycbxg-5QTwa4cKw_Lk_M4zzAs4nJk0kS7urUqO587jQFs1Haxarg0HphnRpq4arSqkmuVYA/exec" },
-        { name: "Wrestle Bros", url: "https://script.google.com/macros/s/AKfycbzf61_c1OXDbrsZz4pecMt5cUWDGwGJWXUtlOAoNdBE2acBbblA31lQmATDlBRpFVYiWw/exec" },
-        { name: "Friday Night Funkin", url: "https://script.google.com/macros/s/AKfycby1HaNDGKwziSvZ_m-drF_v3AFw4E0gOvqn8Dx_9SSxXQrM3s0kFdZYrlPLcryYkPIb/exec" },
-        { name: "Baseball Bros", url: "https://script.google.com/macros/s/AKfycbwyvxP-o1WNt_P4ND0dZ5nG3ytpAeIZsj3tN205-I_WkqGEuWPAS2yBcRWpX_tJ-BtY/exec" },
-        { name: "Only Up", url: "https://script.google.com/macros/s/AKfycbwMccc783yv5Ftx2nkZ6BpHDi66OYtby8TRsYzgDufHka0zzRHHcV19NgtnFJH0ltbEvQ/exec" },
-        { name: "Getaway Shootout", url: "https://script.google.com/macros/s/AKfycbwHKYphUKLbxkpjFx_EWO__M8-hH8mMrlAQWcJVN3squSkph0M3Bb7u7myZzYAbmyeQTA/exec" },
-        { name: "Crazy Dentist", url: "https://script.google.com/macros/s/AKfycbwL5IsBaV0-4OwzZhJ_6tmPgsZ5eMTv-TD-1qgZ_2BvDnit3dlCblBXf_iBiBIckn3T/exec" },
-        { name: "Happy Wheels", url: "https://script.google.com/macros/s/AKfycbyfMPVIGx6dJPrYKeE9e4Erj949-dH28pWVRjdV1vgnoylpBV8af03JNLoz2MwAIBLECg/exec" },
-        { name: "Prison Escape", url: "https://script.google.com/macros/s/AKfycbyyBwGa1C8kH2itma0EGi81NjjpX5DxJQznbNNj7oTU_RGDT2x3s5uJx-zsbsIKvr40eQ/exec" },
-        { name: "Dig to Escape", url: "https://script.google.com/macros/s/AKfycbz3g4g5OZzdwCllJRXQeiB5WsRS6k83WwxhQJAhf5Y_POwAMD6sKJFlBlgD1jgfZInifg/exec" },
-        { name: "Mr. Dude", url: "https://script.google.com/macros/s/AKfycbzFSYMyP5-xv8yF35HL0Aj0S2txSh1DLJ8hnMCUeyW4TgbL3GeQQG0Dr6AsXtGWpIdEeQ/exec" },
-        { name: "FNAF 2", url: "https://bav1.wadmc.site.cdn.cloudflare.net/pages/other/interpreter/index.html?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/39.html" },
-        { name: "Robbie Tycoon", url: "https://script.google.com/macros/s/AKfycbzgKGEc9fUGI21w1jx9DsuXwVddJIpIHfC67322MyoOMZ_0_pzW1_LBsZbnKNTd6igp/exec" },
-        { name: "Hangar 2", url: "https://script.google.com/macros/s/AKfycbxhkIwgROe7gPhcbvQmpy88tk6nWZ8mDYRGeKnMPKgO8U0-mIiRsNFpSRDx1scxX4bO/exec" },
-        { name: "Fun Ragdoll", url: "https://script.google.com/macros/s/AKfycbznGp7b4oeq8f7NHl6ymbX-lfgn0irQJZcRp8zAFpe_PEoD-R39ASBQ3_t7Sx2yA-Quag/exec" },
-        { name: "Brawl Ships", url: "https://script.google.com/macros/s/AKfycby1ojj07-bMzkztAHz7nJxL0c88gZzRF9HR1fCRxGjfGG13iuAt6S5pXuc15jxdIO3tyA/exec" },
-        { name: "RocketGoal.io", url: "https://script.google.com/macros/s/AKfycbybZkVPGyvHUOZbwrJSn5fRQIFcGpoIEhp0r-yq2GWRtE_1G7YzP4t8kPZRfp6tutUN/exec" },
-        { name: "Obby Ragdoll", url: "https://script.google.com/macros/s/AKfycbyZYCjrlO5pzZ-0WzBPJPCh0nxTuU8yQFjAkdy3HjUgQnCWHzlleuDCnKL5cAKVcWe0/exec" },
-        { name: "Fish It", url: "https://script.google.com/macros/s/AKfycbwabBzPFBdOsUl5BiBrPa_4y3_g-qtgFkCn_sNHGsZZNgoy4t1D8XlYabpiVhoUOVmu1g/exec" },
-        { name: "Papas Burgeria", url: "https://script.google.com/macros/s/AKfycbyyfjHc-YiNqGOngfUlkjS5Fvx2x0UYfkerogM_Y3-Z1BQTZW2K0AcegLUtVdRjo5nM/exec" },
-        { name: "Papas Taco Mia", url: "https://script.google.com/macros/s/AKfycbyJDZUnBq6_qyG0CrInptybAP0n54yhZ8agPdAQ1iAT_ki0rfkTjHPSHYdfyOvO1Skwjw/exec" },
-        { name: "Papas Pizzeria", url: "https://script.google.com/macros/s/AKfycbxN6EVQbtkjn6NUiIyJscLGTyyMyAUABzuB_kp4relIe6rr9B8eWmlnlvDsBVtiRa5pPg/exec" },
-        { name: "Castle Wars", url: "https://script.google.com/macros/s/AKfycbyY4CyZLTgV9OVSQw1W42hbLpATlSc-kK6dfZsdQ1lz84_ZeKU4OEDVfzN2yK7l2pIc9A/exec" },
-        { name: "Space Wars 3D", url: "https://script.google.com/macros/s/AKfycbwFZ8nVVnzJ7Ok7T596pn-Y0GriUK20c7_rxqCVIdlY-6-Wym3xrJhO-NyQi8NogxqDXw/exec" },
-        { name: "Monster Box 3D", url: "https://bav1.wadmc.site.cdn.cloudflare.net/pages/other/interpreter/index.html?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/401.html" },
-        { name: "Destroy Car", url: "https://bav1.wadmc.site.cdn.cloudflare.net/pages/other/interpreter/index.html?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/385.html" },
-        { name: "Alexander Empire", url: "https://script.google.com/macros/s/AKfycbySmwkNl5vxIY1bsc7RJJF3ZfHp9TkMho4fc6Vtt91QPrX31OX1y14an84BPq5o-zE8/exec" },
-        { name: "BuildNow.gg", url: "https://bav1.wadmc.site.cdn.cloudflare.net/storage/ag/g/buildnowgg/" },
-        { name: "Fortzone", url: "https://bav1.wadmc.site.cdn.cloudflare.net/pages/other/interpreter/index.html?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/120.html" },
-        { name: "Run 3", url: "https://bav1.wadmc.site.cdn.cloudflare.net/pages/other/interpreter/index.html?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/177.html" },
-        { name: "Speed Stars", url: "https://bav1.wadmc.site.cdn.cloudflare.net/pages/other/interpreter/index.html?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/266.html" },
-        { name: "CSGO Case Chase", url: "https://bav1.wadmc.site.cdn.cloudflare.net/storage/ag/g/csgoclicker/" },
-        { name: "Curveball 3D", url: "https://script.google.com/macros/s/AKfycbydgy6s1YL66mbd6el9TFRAi3hdvC8ssPtT_gfQq4zDxTZxJjPHrFI737JRJj1nmohZng/exec" },
-        { name: "Rainbow Friends", url: "https://script.google.com/macros/s/AKfycbxNB9nSu4vzfq7fJPViycA65TrPuWuNSwe2YIvzyAIFRMtQIkunzA6Ixm2QiVyE37LqsQ/exec" },
-        { name: "Among Us", url: "https://script.google.com/macros/s/AKfycbyix6sPjvsn_izDvhJLVuif1buj9ZtARvj9D_FEQ0rscRXgl-RgArs0t4oJw_OHm5Dr5A/exec" },
-        { name: "Craftmine", url: "https://script.google.com/macros/s/AKfycbzUU6zKRrPYcFmCtljq5gjeSZzyQQZNRi-45LRflu0v8GcVO5BmwHjVhxeXhn6yVkXP/exec" },
-        { name: "My Happy Farm", url: "https://script.google.com/macros/s/AKfycbzATlBgtLc5RwEiuaOH9DHfF1D4a_XUFERoq4f1E1Y3MUJoAgSTAn7WyOqmRArkFLjM/exec" },
-        { name: "Playground Man", url: "https://script.google.com/macros/s/AKfycbyfASSH2K3-0WpQ0Imil8J-Xs4iIlcvunKCGKk6mkm8MygFzhPHEs4Akf879vruIVxx/exec" },
-        { name: "Call of Duty", url: "https://script.google.com/macros/s/AKfycbyVPz9wAXi5MOoN-W13DNHZB-mdu-B6MdRdvq6qPpC-cIYGU7RZggTJpPIZFDEA_XShlQ/exec" },
-        { name: "BunnyLand", url: "https://script.google.com/macros/s/AKfycbzYNoh6yqG6eu3SMGFRLwHI1B6R79jADni5_zTz5G0IYuwqo2WbU0N9hiYUkXKS8Zh1/exec" },
-        { name: "Food Tycoon", url: "https://script.google.com/macros/s/AKfycbxS6WT28mw1EO9wkpTRvlCAit9yuJCK7rm8USP3HEUviAjeDB-M6dvtc7zBosLBa92QFA/exec" },
-        { name: "Merge Fellas", url: "https://script.google.com/macros/s/AKfycbxKeACMsdA3N71Rk2wolGOxrBqYz9UXnTo0o_Z4nvyh-z0SjoPO5UnfTLQXgsZQey4a/exec" },
-        { name: "Pool 8 3D", url: "https://script.google.com/macros/s/AKfycbwgNIFE-Y2ckj1yfL215QDByY61L8tOiBJUC2IppZmScK2wrOVoEMjilX2f-TdEYN3N/exec" },
-        { name: "Endless War", url: "https://script.google.com/macros/s/AKfycbx0g5BUL99BiBoQcEUYIFlFifyjxIR92tS8WWNAqEZnUx9ePaoEEZnO2CfcGHNUU2lRMQ/exec" },
-        { name: "Zombie Siege", url: "https://script.google.com/macros/s/AKfycbxUErJUc_ACvigcRFz3qfnoGUqikZVKUfKZekuAeEEfqCBKS-9WQF8XXJqyiH2kk85r/exec" },
-        { name: "Hop Masters", url: "https://script.google.com/macros/s/AKfycbwNy4zXsSbExk8y6K7XIeg68xNFxPG_06EXhu4dtlR8vyGfODTey-POqEXTxEi_HxboQQ/exec" },
-        { name: "Steal Brainrot 2", url: "https://script.google.com/macros/s/AKfycbxJalyip_ETy_kolDAlSVxdcnLtn16P6gIoJ5kDwt1abHFX32SUJEOLCWU31veTffv2/exec" },
-        { name: "Battle Soccer", url: "https://script.google.com/macros/s/AKfycbypNJTV2_4SaNeQ_yGszhhWdue30IzXRZnqpA9d3q9LnYVV_kulbaHCR_csPvFZ3MQf0A/exec" },
-        { name: "Ice Hockey", url: "https://script.google.com/macros/s/AKfycbyrV0taviLggEVl88GTQrd9J-caSQfxqraH6_Zu2evPkn4qI-qzO3nTibe7yFX5KW3Y/exec" }
+        // ── CLASSICS (your originals) ──────────────────────────────────────────
+        { name: "Plants vs Zombies", url: "https://script.google.com/macros/s/AKfycbyyEXD9_h6Vsie5eSBmDPCD1rAgPDa6O4kKxn9eyRMkzEsohm_7sMFRzs_h411gQEPx2w/exec", cat: "Strategy" },
+        { name: "Subway Surfers", url: "https://mysticgames.netlify.app/games/subway/", cat: "Runner" },
+        { name: "Snow Rider 3D", url: "https://script.google.com/macros/s/AKfycbw5Z-Ryg_JfIIDYH7pzzPKXlr2tN0HCw-tT_ZvxBGDPsDDY41ewPVneVeLzelfpnBab/exec", cat: "Sports" },
+        { name: "Cookie Clicker", url: "https://script.google.com/macros/s/AKfycbxGM35J29NkO-2LYjxWj_cA9IUaaXypkUy-LqXyLRbGTz0R6lXmAEapz1STN1jlTIRavw/exec", cat: "Clicker" },
+        { name: "Geometry Dash", url: "https://mysticgames.netlify.app/games/geometrydash/", cat: "Rhythm" },
+        { name: "Retro Bowl", url: "https://bav1.wadmc.site.cdn.cloudflare.net/pages/other/interpreter/index.html?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/33.html", cat: "Sports" },
+        { name: "Retro Bowl College", url: "https://bav1.wadmc.site.cdn.cloudflare.net/pages/other/interpreter/index.html?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/34.html", cat: "Sports" },
+        { name: "Run 3", url: "https://bav1.wadmc.site.cdn.cloudflare.net/pages/other/interpreter/index.html?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/177.html", cat: "Runner" },
+        { name: "1v1 LOL", url: "https://1v1.lol", cat: "Shooter" },
+        { name: "Bitlife", url: "https://script.google.com/macros/s/AKfycbz7YQScNBizgtxyn4DO7v12IQTI4nqwQc8srdlN30uZWw5BxWdIr2TPoMRC_8yQQKC7/exec", cat: "Simulation" },
+        { name: "Slope City", url: "https://script.google.com/macros/s/AKfycbyendSzfWzjivGUAoNgH5QDpJIxJDyJvSYwXWxcV_8gl9xkdTMV2BvDpjiWNw5pGaVT/exec", cat: "Runner" },
+        { name: "OvO", url: "https://script.google.com/macros/s/AKfycbyDZOJq86UIFlMkKfvZtA_Sv86sKooVRpwVFS2rb38TOT8ExCt3PfR1Y5UAveVuVGlQLw/exec", cat: "Platformer" },
+        { name: "OvO 2", url: "https://script.google.com/macros/s/AKfycbx9z-8dgnQm5HtguTN1a6ij3Dcb_op9-d9dsT4CDOt4IVOc7JSvGt3k1PS3-083XIEF/exec", cat: "Platformer" },
+        { name: "Vex", url: "https://script.google.com/macros/s/AKfycbxwyDsC49pauwYS59k4k10ptEAWo-6qgJf2nyvPt3i52bikDw98aFuDgvSPRWaIsnr8/exec", cat: "Platformer" },
+        { name: "Happy Wheels", url: "https://script.google.com/macros/s/AKfycbyfMPVIGx6dJPrYKeE9e4Erj949-dH28pWVRjdV1vgnoylpBV8af03JNLoz2MwAIBLECg/exec", cat: "Physics" },
+        { name: "DOOM", url: "https://script.google.com/macros/s/AKfycbyxLM58t1oGIyqp09GNTAGBqUBaFg7A9nY5lLwS45Zg2z63ax0EmnhHCXW_aHhEpdFcqg/exec", cat: "Shooter" },
+        { name: "DOOM 2", url: "https://script.google.com/macros/s/AKfycbx61mSm2aEx_wwEQB66hIGUZm8hV2dBZvo2QXcabpXvc0r25c22pW-pdE8tmxBjOWcWCw/exec", cat: "Shooter" },
+        { name: "Bloons TD", url: "https://script.google.com/macros/s/AKfycbzKR69hQK7HutG9tRM2cEM9H8vEX8xwkPDTeEjeju7G_P2Xf83RYqBoNT2S9NPo7NWN/exec", cat: "Strategy" },
+        { name: "Bloons TD 2", url: "https://script.google.com/macros/s/AKfycbxI5KGOnqExl7GEpiCd5XXr9PXBMkGhDLWnOQfEuXRjmXom-nUzLjOXfP4iwAYUvbE/exec", cat: "Strategy" },
+        { name: "Bloons TD 3", url: "https://script.google.com/macros/s/AKfycbzRkRFh3xH_YzLqtvFVsKcPOdqkcps9umH96kwECqmzugE1XkxYo6ryhCKD1m7JkR0-rw/exec", cat: "Strategy" },
+        { name: "Bloons TD 4", url: "https://script.google.com/macros/s/AKfycby2trsng3jMdXZGJn1BQjbqYbooUtnPL3dT1EP9yp7GQRHsUSGyZAUB62jIicJek6A/exec", cat: "Strategy" },
+        { name: "Bloons TD 5", url: "https://script.google.com/macros/s/AKfycbzSjvvBl4oIbQbsdQ6wORkEPqBumZKhlNUW3FirGHuAIe6EPZ_QGuF4N0TqjL0ECFoo/exec", cat: "Strategy" },
+        { name: "Friday Night Funkin", url: "https://script.google.com/macros/s/AKfycby1HaNDGKwziSvZ_m-drF_v3AFw4E0gOvqn8Dx_9SSxXQrM3s0kFdZYrlPLcryYkPIb/exec", cat: "Rhythm" },
+        { name: "Among Us", url: "https://script.google.com/macros/s/AKfycbyix6sPjvsn_izDvhJLVuif1buj9ZtARvj9D_FEQ0rscRXgl-RgArs0t4oJw_OHm5Dr5A/exec", cat: "Multiplayer" },
+        { name: "Pokemon Emerald", url: "https://script.google.com/macros/s/AKfycbydeGJlDAWwZCE5PY08zOOmx37ItizsHHLSxDEwAEOsGgT7n9rqb4V1Anelns4sezU6/exec", cat: "RPG" },
+        { name: "Pokemon Fire", url: "https://script.google.com/macros/s/AKfycbzEbzXxS4zazELSeJtXyLaPrJhPMEJsh2lACeG_0Ky7xTL0ewG0m1iJeU2d1K0OmeGOug/exec", cat: "RPG" },
+        { name: "Pokemon Ruby", url: "https://script.google.com/macros/s/AKfycbypOitjGD19RPkCYQ8vgJzFfmtMtnl3naBwSw9OhpqtalZs0k3Pri3nL7X76qUwdV9GGQ/exec", cat: "RPG" },
+        { name: "Super Mario 64", url: "https://script.google.com/macros/s/AKfycbyB8Cg09IyL5iA01VRMcp6GXWBsHJDyytzuovDyiHdgIUmtHuNM7x27VlBnJjYt26F-/exec", cat: "Platformer" },
+        { name: "Super Mario Run", url: "https://script.google.com/macros/s/AKfycbyvVfKl6U8WIVvyCjiU0bTUncbb_pYAdYbJGrvPFL8g4H3brthvqFi2uKK6YW5nTJepcw/exec", cat: "Platformer" },
+        { name: "Legend of Zelda", url: "https://script.google.com/macros/s/AKfycbzu7JPsUyqahRNyoVAWYD-uIEpV5FNs0akJEM0EwNV_ToMOxVpNPgW8huZ4tsKfKLM7/exec", cat: "RPG" },
+        { name: "Drift Hunters", url: "https://script.google.com/macros/s/AKfycbw8iHPqdVFEzquUYbNxFVAu1Tw4Nri5SWMRLdP_c7a84vCOHVG7YUWuhjSVptg1SVHr/exec", cat: "Racing" },
+        { name: "Drift Boss", url: "https://script.google.com/macros/s/AKfycbwAOi2tPbjzeWDkigfZMIPEGubYxz2la_qjxJyydNZyjwgbqsv9mv05g7tdmLHdvdaw/exec", cat: "Racing" },
+        { name: "Madalin Car Stunts", url: "https://script.google.com/macros/s/AKfycbwkhPzDs1efaiOPjYhNnVKMinAE3jONqLhZa8Eu5oGeqrQaDQtp-glIhnYrXAem5E8Dqw/exec", cat: "Racing" },
+        { name: "Madalin Cars 2", url: "https://kyleissosigma.global.ssl.fastly.net/projects/madalin-stunt-cars-2/index.html", cat: "Racing" },
+        { name: "Crazy Cattle 3D", url: "https://bav1.wadmc.site.cdn.cloudflare.net/pages/other/interpreter/index.html?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/164-temp2.html", cat: "Action" },
+        { name: "Poly Track", url: "https://script.google.com/macros/s/AKfycbzOmulSCFb0CwkaIrhIBdqglMVAfxQppFmVZmp2cp8-eHNyTClffFte/exec", cat: "Racing" },
+        { name: "Drive Mad", url: "https://bav1.wadmc.site.cdn.cloudflare.net/pages/other/interpreter/index.html?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/35.html", cat: "Racing" },
+        { name: "BuildNow.gg", url: "https://bav1.wadmc.site.cdn.cloudflare.net/storage/ag/g/buildnowgg/", cat: "Shooter" },
+        { name: "CS Strike", url: "https://storage.googleapis.com/freezenova/all/2024/unity2/fps-strike/pre-gg.html", cat: "Shooter" },
+        { name: "Time Shooter 2", url: "https://storage.googleapis.com/test-41376.appspot.com/ts2.html", cat: "Shooter" },
+        { name: "Time Shooter 3", url: "https://storage.googleapis.com/test-41376.appspot.com/ts3.html", cat: "Shooter" },
+        { name: "War Strike", url: "https://storage.googleapis.com/freezenova/all/2024/unity3/warstrike/pre-gg.html", cat: "Shooter" },
+        { name: "Gun Night", url: "https://script.google.com/macros/s/AKfycbxIkkCWh4kp5QZwqA8qXEnb2XaFgXTErieBl4CMrLPYHqTDtl21HiF4373fWf9hInDNBQ/exec", cat: "Shooter" },
+        { name: "Pixel Shooter", url: "https://script.google.com/macros/s/AKfycbzBG3iwMy-Kdz3gY7oQSBugoIGwmA-IWITNrA8j1vX5ytZQHcKTS-61QLSpA5ixBJ2U/exec", cat: "Shooter" },
+        { name: "FNAF", url: "https://script.google.com/macros/s/AKfycbxJNtrKTWPCSIo9tOqq53G2xqoQCIPDTYUsVOT79Eqk8I7C5cQkGdDnj0jzlNHa7bvs3g/exec", cat: "Horror" },
+        { name: "FNAF 2", url: "https://bav1.wadmc.site.cdn.cloudflare.net/pages/other/interpreter/index.html?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/39.html", cat: "Horror" },
+        { name: "FNAF 3", url: "https://script.google.com/macros/s/AKfycbyVdPAG4aRGh5tmBwKEZthKmaqO12GTD-h-C1Do6ICbR3ZEj5ic1aJQ2e4Im2pxcWLf/exec", cat: "Horror" },
+        { name: "Slender Man", url: "https://script.google.com/macros/s/AKfycbzD78lGmoq37iyrMDWZavBLxIRpQ_HmutXT9arsozaDkYaHVSfk7YliEmd3EL4nXM_4Bw/exec", cat: "Horror" },
+        { name: "Granny", url: "https://storage.googleapis.com/test-41376.appspot.com/gn.html", cat: "Horror" },
+        { name: "Squid Game", url: "https://firebasestorage.googleapis.com/v0/b/test-1e83a.appspot.com/o/sg.html?alt=media&token=3a831154-d98f-4ee8-b134-6147678bdef8", cat: "Action" },
+        { name: "Getaway Shootout", url: "https://script.google.com/macros/s/AKfycbwHKYphUKLbxkpjFx_EWO__M8-hH8mMrlAQWcJVN3squSkph0M3Bb7u7myZzYAbmyeQTA/exec", cat: "Action" },
+        { name: "Stickman Fighter", url: "https://script.google.com/macros/s/AKfycbw3hd0GBBIL0fD_54SGZZFEfCVUMCXP0tUZMq6OjDiXeNnUQ97rt70cUpDfkmgSGtErmQ/exec", cat: "Fighting" },
+        { name: "Wrestle Bros", url: "https://script.google.com/macros/s/AKfycbzf61_c1OXDbrsZz4pecMt5cUWDGwGJWXUtlOAoNdBE2acBbblA31lQmATDlBRpFVYiWw/exec", cat: "Fighting" },
+        { name: "Football Bros", url: "https://script.google.com/macros/s/AKfycbxjYzXDX0iopyVPSDgG8_sTlQPpjv5KYMdsOtLXzYrQYdHPmHdswUb5NTXedQ3RK8XyoQ/exec", cat: "Sports" },
+        { name: "Basketball Stars", url: "https://script.google.com/macros/s/AKfycbwzYMDDcdDUAvEP7iO6OdRk-5_oUp6vYvDdyEEz8tTOzWi5y4-Qf3vQ6TBoZuc9UYVcLg/exec", cat: "Sports" },
+        { name: "Basketball Bros", url: "https://script.google.com/macros/s/AKfycbxUfaDSpH-0SJL0WPKt38JY7OOOGMmtpY9JTSbL8pvtjxS7jSpNHHu6MdZgWUshIU00Kw/exec", cat: "Sports" },
+        { name: "Baseball Bros", url: "https://script.google.com/macros/s/AKfycbwyvxP-o1WNt_P4ND0dZ5nG3ytpAeIZsj3tN205-I_WkqGEuWPAS2yBcRWpX_tJ-BtY/exec", cat: "Sports" },
+        { name: "Ice Hockey", url: "https://script.google.com/macros/s/AKfycbyrV0taviLggEVl88GTQrd9J-caSQfxqraH6_Zu2evPkn4qI-qzO3nTibe7yFX5KW3Y/exec", cat: "Sports" },
+        { name: "NFL Madden", url: "https://script.google.com/macros/s/AKfycbyeK7PhBwy3ieGSllnEILb9qSdGPmt2vheRIPImM2VOllSJAk-0Y82i1OVGl7qxWda3ZA/exec", cat: "Sports" },
+        { name: "A Small World Cup", url: "https://script.google.com/macros/s/AKfycbwSK5IqLXbZppMz9znIJVycB4BZCHodE3uSgUF4C1fReEqmMSDYua81Ew7Rp-Cn85gojg/exec", cat: "Sports" },
+        { name: "Battle Soccer", url: "https://script.google.com/macros/s/AKfycbypNJTV2_4SaNeQ_yGszhhWdue30IzXRZnqpA9d3q9LnYVV_kulbaHCR_csPvFZ3MQf0A/exec", cat: "Sports" },
+        { name: "Papas Burgeria", url: "https://script.google.com/macros/s/AKfycbyyfjHc-YiNqGOngfUlkjS5Fvx2x0UYfkerogM_Y3-Z1BQTZW2K0AcegLUtVdRjo5nM/exec", cat: "Cooking" },
+        { name: "Papas Taco Mia", url: "https://script.google.com/macros/s/AKfycbyJDZUnBq6_qyG0CrInptybAP0n54yhZ8agPdAQ1iAT_ki0rfkTjHPSHYdfyOvO1Skwjw/exec", cat: "Cooking" },
+        { name: "Papas Pizzeria", url: "https://script.google.com/macros/s/AKfycbxN6EVQbtkjn6NUiIyJscLGTyyMyAUABzuB_kp4relIe6rr9B8eWmlnlvDsBVtiRa5pPg/exec", cat: "Cooking" },
+        { name: "Cooking Fever", url: "https://script.google.com/macros/s/AKfycbyjI0zmcSCEH1KYPHLRli9aaHyQettbfiqOyaKVDeJn8rccfLOQYK6pJze4xP-EFJKg/exec", cat: "Cooking" },
+        { name: "Eggy Car", url: "https://script.google.com/macros/s/AKfycbxGFiHgVNVoous7yjguN7bcuwa6lejCHgh6V1weh1vNalyCzpMmaMH9NhTisNSqkUo3/exec", cat: "Racing" },
+        { name: "Hole IO", url: "https://script.google.com/macros/s/AKfycbwSQ0aXrXdz23Z0adlljZLtt6EGzD7max6U15OnUFBxhQmht6KK7l7RzsVo2wOdkoXR/exec", cat: "IO" },
+        { name: "Slither IO", url: "https://script.google.com/macros/s/AKfycbwXhPAppqZUy69d6b26B3Z6daQdZmzPsiaSsywQseSBMh94FLNnVTmupJqtonwt9oaQLw/exec", cat: "IO" },
+        { name: "Paper IO", url: "https://script.google.com/macros/s/AKfycbwNxCzUuQVmLRWTwYK2D4yTqpWg2O-qge8BwCkxhLmqWd1DtXynwJXPEDClPt7ERZr-/exec", cat: "IO" },
+        { name: "Snow IO", url: "https://script.google.com/macros/s/AKfycbxa3OjBw8KWer3YhEXl1wxoe1uQKNo-wgGuqPO3NTndX566TTs10-ioXopEPitTvE-B/exec", cat: "IO" },
+        { name: "Fishing IO", url: "https://script.google.com/macros/s/AKfycbzZJhJIeHFv_-I9PXF5xA-MA115srBLxJu4hxtMP4z0hGHSBcMzBNydUT5UxfmhSNQq/exec", cat: "IO" },
+        { name: "Brawl Stars", url: "https://script.google.com/macros/s/AKfycby2-8wV6Z0j1rs8FEOpgLh45K2Psh7qsbQX9PFQqvuVhkiIxgbYZCQbnYTQvb6KyiGG/exec", cat: "Action" },
+        { name: "Burrito Bison", url: "https://script.google.com/macros/s/AKfycbw5vt-wH3HFzY0kmnIwl6B30074jSz-oKtqRQ5L1EFsGbq9-g5h_SSP0qaTMf0M_RH1/exec", cat: "Action" },
+        { name: "Cut The Rope", url: "https://script.google.com/macros/s/AKfycbzC5BJ124UUKkQqKJwi6D_xOIz7Vy0fHyc1Fl8NEnSUtRXD-AUGnkKt3u1bugFLT5s/exec", cat: "Puzzle" },
+        { name: "Color Switch", url: "https://script.google.com/macros/s/AKfycbwWWBtavXiMCq399BK9oR49x9YwZ3TnN4vnTZ5fhELKP8yqc9_mqT25hT6PdwjD_hMdmA/exec", cat: "Puzzle" },
+        { name: "Block Blast", url: "https://script.google.com/macros/s/AKfycbxZvtI5agrSjt2PR9Bi4M0UrukDLv22m04S03neCz_La2RwnISHUDQ48n6hlYayZvIs/exec", cat: "Puzzle" },
+        { name: "Binding of Isaac", url: "https://script.google.com/macros/s/AKfycbx1-ahIchbUqDQdqB5GJ2-ZxlbPLz1lz7ohzlqUZ41JUrAnGTIPjgLaASGqqV1ToAuZ/exec", cat: "RPG" },
+        { name: "GTA 4", url: "https://storage.googleapis.com/freezenova/all/2023/unity2/gta-simulator/pre-gg.html", cat: "Action" },
+        { name: "Stickman GTA", url: "https://storage.googleapis.com/freezenova/all/2024/unity3/stickman-gta-city/pre-gg.html", cat: "Action" },
+        { name: "Death Run 3D", url: "https://script.google.com/macros/s/AKfycbwqW4kBl41CHKxAW1aOCzUllnCGaK6LDmkZfAZH_dJzu646nns5bRfn0oqa5Zpq9zEI/exec", cat: "Runner" },
+        { name: "Eaglercraft", url: "https://mysticgames.netlify.app/games/eaglercraft/dragonx_v4%20(1)", cat: "Survival" },
+        { name: "Craftmine", url: "https://script.google.com/macros/s/AKfycbzUU6zKRrPYcFmCtljq5gjeSZzyQQZNRi-45LRflu0v8GcVO5BmwHjVhxeXhn6yVkXP/exec", cat: "Survival" },
+        { name: "Pixel Gun 3D", url: "https://storage.googleapis.com/test-41376.appspot.com/pga2.html", cat: "Shooter" },
+        { name: "Funny Shooter 2", url: "https://storage.googleapis.com/test-41376.appspot.com/fs2.html", cat: "Shooter" },
+        { name: "Bank Robbery 2", url: "https://bav1.wadmc.site.cdn.cloudflare.net/pages/other/interpreter/index.html?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/439.html", cat: "Action" },
+        { name: "Crash Carts", url: "https://script.google.com/macros/s/AKfycbx63iRe5mtf5PQGIn_eGwKePxCA1iU6w-YApn57Mh4phi2ZB-G-GCJA1YTV9jKrwoqb/exec", cat: "Racing" },
+        { name: "Slope 2", url: "https://sites.google.com/view/slpe-2-player/", cat: "Runner" },
+        { name: "Speed Stars", url: "https://bav1.wadmc.site.cdn.cloudflare.net/pages/other/interpreter/index.html?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/266.html", cat: "Racing" },
+        { name: "Tiny Archer", url: "https://script.google.com/macros/s/AKfycbwewqfKyRlPVStl7DY10aR-AbTtoXNZzFxi_TEgtOfJacKP6zplkmCDV5C8Ns7NKowl/exec", cat: "Action" },
+        { name: "Ragdoll Archers", url: "https://script.google.com/macros/s/AKfycbxNbvNHQi6AaM1h7e1N4T2gkDUR3CMeqDfto6yUKf4DKrOELGCCT4maR8rwUvL3EAXg/exec", cat: "Action" },
+        { name: "Pixel Archer", url: "https://script.google.com/macros/s/AKfycbxg-5QTwa4cKw_Lk_M4zzAs4nJk0kS7urUqO587jQFs1Haxarg0HphnRpq4arSqkmuVYA/exec", cat: "Action" },
+        { name: "Stickman Archero", url: "https://script.google.com/macros/s/AKfycbxQMjTKES5CMpXfWBSXOQvk0qSCqIMpeT_zTPIshM-_XuAdBdi2lm2M9UfLdjHCSSg3/exec", cat: "Action" },
+        { name: "Miami Shark", url: "https://script.google.com/macros/s/AKfycbwcOrx811OvPzstvQr6A5KOKznvdBG_acIb69QrkqZf9SS6Amq6JNWlHFFVHEGAAgeylQ/exec", cat: "Action" },
+        { name: "Zombie Sandbox", url: "https://script.google.com/macros/s/AKfycbxutg4sKZIHB5Nu6jyZ1PcIze8YSbsHFDx8xJraC4VHAfJOu4If-Tk7swki5Mia_IGY/exec", cat: "Survival" },
+        { name: "Zombie Siege", url: "https://script.google.com/macros/s/AKfycbxUErJUc_ACvigcRFz3qfnoGUqikZVKUfKZekuAeEEfqCBKS-9WQF8XXJqyiH2kk85r/exec", cat: "Survival" },
+        { name: "Noob Miner", url: "https://script.google.com/macros/s/AKfycbxkvPO4mEcWEk5a9TgEuR7qyiYZs7hL80XF5pwK8QMKHqmA7qUqxvIePB3PF9c3Bqc93w/exec", cat: "Survival" },
+        { name: "Dig to Escape", url: "https://script.google.com/macros/s/AKfycbz3g4g5OZzdwCllJRXQeiB5WsRS6k83WwxhQJAhf5Y_POwAMD6sKJFlBlgD1jgfZInifg/exec", cat: "Survival" },
+        { name: "Riddle School", url: "https://script.google.com/macros/s/AKfycbyBMzbST-uTVoOBVyLwbqs7LeloEnSkKiP4Cik0DmPAcVR7Oqq-BzXdvrOzNR6Uwl4MJQ/exec", cat: "Puzzle" },
+        { name: "Riddle School 2", url: "https://script.google.com/macros/s/AKfycbxAxmSYav_FxW2KK6Uq4gGNAkqUdVghvBbB7RGGp94sgFIyB0zaNQwMmtyXUrA7Uh80yQ/exec", cat: "Puzzle" },
+        { name: "Riddle School 3", url: "https://script.google.com/macros/s/AKfycbwa5pPN4jqxL2C_SbGRkUUm23NwS3SB0XmUkqFNp0mEjCMy_lphUCFHXzb5ZsOUf9drNQ/exec", cat: "Puzzle" },
+        { name: "Riddle School 4", url: "https://script.google.com/macros/s/AKfycbwGuLeqEsgE3zoFtlvDy6eJ9dwvTz7tJIubeYTMXqUKG-cNMrlgRteuJM1QxCDj_6gN/exec", cat: "Puzzle" },
+        { name: "Sushi Cat", url: "https://script.google.com/macros/s/AKfycbxklkIQr8XmD1Qop6uHXJdSXks7pLz1zBMg7k7jPzOTdZChInaDEaQbzN6YNCZbIbbLzQ/exec", cat: "Puzzle" },
+        { name: "Gacha Life", url: "https://script.google.com/macros/s/AKfycbwpsiFvcV6VcCA2a7HCMZd4FsuW9rw53GS08ItGe6CXqWkkrVrl1yV2GW-E3JGYOzkcvQ/exec", cat: "Casual" },
+        { name: "My Happy Farm", url: "https://script.google.com/macros/s/AKfycbzATlBgtLc5RwEiuaOH9DHfF1D4a_XUFERoq4f1E1Y3MUJoAgSTAn7WyOqmRArkFLjM/exec", cat: "Casual" },
+        { name: "Theme Hotel", url: "https://script.google.com/macros/s/AKfycbwrJdMjGr6QgtCqRECx-sah1QhwG_uDl05wIqxLiBciZkSh2bheRU40RjCAczlxBJwuNw/exec", cat: "Simulation" },
+        { name: "Super Market Sim", url: "https://storage.googleapis.com/freezenova/all/2025/unity/supermarket-simulator/pre-gg.html", cat: "Simulation" },
+        { name: "Food Tycoon", url: "https://script.google.com/macros/s/AKfycbxS6WT28mw1EO9wkpTRvlCAit9yuJCK7rm8USP3HEUviAjeDB-M6dvtc7zBosLBa92QFA/exec", cat: "Simulation" },
+        { name: "Robbie Tycoon", url: "https://script.google.com/macros/s/AKfycbzgKGEc9fUGI21w1jx9DsuXwVddJIpIHfC67322MyoOMZ_0_pzW1_LBsZbnKNTd6igp/exec", cat: "Simulation" },
+        { name: "Ant War", url: "https://script.google.com/macros/s/AKfycbwTCDauLkMPclvbdLzVCcJlUN0ZJJhW1WWX16471JKSvDvemRPf1d_koYpXxbgo5xtv/exec", cat: "Strategy" },
+        { name: "Castle Wars", url: "https://script.google.com/macros/s/AKfycbyY4CyZLTgV9OVSQw1W42hbLpATlSc-kK6dfZsdQ1lz84_ZeKU4OEDVfzN2yK7l2pIc9A/exec", cat: "Strategy" },
+        { name: "TABS", url: "https://script.google.com/macros/s/AKfycbx-20sK1Vv2W5l1l4NnyzA67dCLHiWUNOnwlGioOx9yKXkauoZt5H7l6il14wlLS9hI4A/exec", cat: "Strategy" },
+        { name: "TABS 2", url: "https://script.google.com/macros/s/AKfycbzMjY-ZtNYvvuJQryRtxbBEGL3JoIeGfnoawa-wCBbr8TS-OKaY0AJcjZDUQ72dC_GK/exec", cat: "Strategy" },
+        { name: "Alexander Empire", url: "https://script.google.com/macros/s/AKfycbySmwkNl5vxIY1bsc7RJJF3ZfHp9TkMho4fc6Vtt91QPrX31OX1y14an84BPq5o-zE8/exec", cat: "Strategy" },
+        { name: "Endless War", url: "https://script.google.com/macros/s/AKfycbx0g5BUL99BiBoQcEUYIFlFifyjxIR92tS8WWNAqEZnUx9ePaoEEZnO2CfcGHNUU2lRMQ/exec", cat: "Strategy" },
+        { name: "Space Wars 3D", url: "https://script.google.com/macros/s/AKfycbwFZ8nVVnzJ7Ok7T596pn-Y0GriUK20c7_rxqCVIdlY-6-Wym3xrJhO-NyQi8NogxqDXw/exec", cat: "Strategy" },
+        { name: "Pool 8 3D", url: "https://script.google.com/macros/s/AKfycbwgNIFE-Y2ckj1yfL215QDByY61L8tOiBJUC2IppZmScK2wrOVoEMjilX2f-TdEYN3N/exec", cat: "Sports" },
+        { name: "Governor of Poker", url: "https://script.google.com/macros/s/AKfycbypfdD_P9HVmO5Ms9mJZX7xl4IQBSsFYdUqZoJhR9f97McSR9B1wqvUc4YhoORgScn5/exec", cat: "Card" },
+        { name: "Bottle Flip 3D", url: "https://script.google.com/macros/s/AKfycbzwDflD6NVq9iPdEWsRyyI4iqR_k47P-BK4sn_vpYaZGsPJz3zDYRDy45azzYiPnYs/exec", cat: "Casual" },
+        { name: "Backflip Maniac", url: "https://script.google.com/macros/s/AKfycbyExxCazbrnnLXvfNagILoQmILcNwXIkg8QDmtAo2Q6ZoI9KfUar3j7jjbdi3mE_km8/exec", cat: "Casual" },
+        { name: "Hop Masters", url: "https://script.google.com/macros/s/AKfycbwNy4zXsSbExk8y6K7XIeg68xNFxPG_06EXhu4dtlR8vyGfODTey-POqEXTxEi_HxboQQ/exec", cat: "Casual" },
+        { name: "Body Drop 3D", url: "https://script.google.com/macros/s/AKfycbyXOw6qzM51ssGj_M9IbqU2ecyQivgppEfFXnGRtWv2fa88YqEgVxfE1pA3x-Tf1jfxTA/exec", cat: "Casual" },
+        { name: "Merge Fellas", url: "https://script.google.com/macros/s/AKfycbxKeACMsdA3N71Rk2wolGOxrBqYz9UXnTo0o_Z4nvyh-z0SjoPO5UnfTLQXgsZQey4a/exec", cat: "Casual" },
+
+        // ── NEW ADDITIONS ──────────────────────────────────────────────────────
+
+        // Shooters / FPS
+        { name: "Krunker.io", url: "https://krunker.io", cat: "Shooter", isNew: true },
+        { name: "Shell Shockers", url: "https://shellshock.io", cat: "Shooter", isNew: true },
+        { name: "Bullet Force", url: "https://www.crazygames.com/embed/bullet-force-multiplayer", cat: "Shooter", isNew: true },
+        { name: "Forward Assault", url: "https://www.crazygames.com/embed/forward-assault-remix", cat: "Shooter", isNew: true },
+        { name: "Combat Online", url: "https://www.crazygames.com/embed/combat-online", cat: "Shooter", isNew: true },
+        { name: "Warbrokers.io", url: "https://warbrokers.io", cat: "Shooter", isNew: true },
+        { name: "Venge.io", url: "https://venge.io", cat: "Shooter", isNew: true },
+        { name: "Gridpunk", url: "https://gridpunk.com", cat: "Shooter", isNew: true },
+
+        // IO Games
+        { name: "Agar.io", url: "https://agar.io", cat: "IO", isNew: true },
+        { name: "Diep.io", url: "https://diep.io", cat: "IO", isNew: true },
+        { name: "Surviv.io", url: "https://surviv.io", cat: "IO", isNew: true },
+        { name: "Mope.io", url: "https://mope.io", cat: "IO", isNew: true },
+        { name: "Starve.io", url: "https://starve.io", cat: "IO", isNew: true },
+        { name: "Lordz.io", url: "https://www.lordz.io", cat: "IO", isNew: true },
+        { name: "Wormate.io", url: "https://wormate.io", cat: "IO", isNew: true },
+        { name: "Wanderers.io", url: "https://wanderers.io", cat: "IO", isNew: true },
+        { name: "Zombs.io", url: "https://zombs.io", cat: "IO", isNew: true },
+        { name: "Defly.io", url: "https://defly.io", cat: "IO", isNew: true },
+        { name: "Flappy.io", url: "https://flappybird.io", cat: "IO", isNew: true },
+        { name: "Smash Karts", url: "https://smashkarts.io", cat: "IO", isNew: true },
+        { name: "Curveball 3D", url: "https://script.google.com/macros/s/AKfycbydgy6s1YL66mbd6el9TFRAi3hdvC8ssPtT_gfQq4zDxTZxJjPHrFI737JRJj1nmohZng/exec", cat: "IO" },
+
+        // Platformers
+        { name: "Fireboy & Watergirl", url: "https://www.crazygames.com/embed/fireboy-and-watergirl-in-the-forest-temple", cat: "Platformer", isNew: true },
+        { name: "Fireboy & Watergirl 2", url: "https://www.crazygames.com/embed/fireboy-and-watergirl-2-light-temple", cat: "Platformer", isNew: true },
+        { name: "Fireboy & Watergirl 3", url: "https://www.crazygames.com/embed/fireboy-and-watergirl-3-ice-temple", cat: "Platformer", isNew: true },
+        { name: "Fireboy & Watergirl 4", url: "https://www.crazygames.com/embed/fireboy-and-watergirl-4-crystal-temple", cat: "Platformer", isNew: true },
+        { name: "Fireboy & Watergirl 5", url: "https://www.crazygames.com/embed/fireboy-and-watergirl-5-elements", cat: "Platformer", isNew: true },
+        { name: "Geometry Dash Lite", url: "https://geometrydashfull.com/geometry-dash-lite/", cat: "Platformer", isNew: true },
+        { name: "Geometry Dash SubZero", url: "https://geometrydashfull.com/geometry-dash-subzero/", cat: "Platformer", isNew: true },
+        { name: "Sonic.exe", url: "https://www.crazygames.com/embed/sonic-exe", cat: "Platformer", isNew: true },
+        { name: "Getting Over It", url: "https://www.crazygames.com/embed/getting-over-it", cat: "Platformer", isNew: true },
+        { name: "Short Life", url: "https://www.crazygames.com/embed/short-life", cat: "Platformer", isNew: true },
+        { name: "Short Life 2", url: "https://www.crazygames.com/embed/short-life-2", cat: "Platformer", isNew: true },
+        { name: "Only Up Parkour", url: "https://script.google.com/macros/s/AKfycbwMccc783yv5Ftx2nkZ6BpHDi66OYtby8TRsYzgDufHka0zzRHHcV19NgtnFJH0ltbEvQ/exec", cat: "Platformer" },
+
+        // Racing
+        { name: "Moto X3M", url: "https://www.crazygames.com/embed/moto-x3m", cat: "Racing", isNew: true },
+        { name: "Moto X3M Pool Party", url: "https://www.crazygames.com/embed/moto-x3m-pool-party", cat: "Racing", isNew: true },
+        { name: "Moto X3M Spooky Land", url: "https://www.crazygames.com/embed/moto-x3m-spooky-land", cat: "Racing", isNew: true },
+        { name: "Moto X3M Winter", url: "https://www.crazygames.com/embed/moto-x3m-winter", cat: "Racing", isNew: true },
+        { name: "Moto X3M Bike Race", url: "https://www.crazygames.com/embed/moto-x3m-bike-race-game", cat: "Racing", isNew: true },
+        { name: "Burnout Drift", url: "https://www.crazygames.com/embed/burnout-drift-highway", cat: "Racing", isNew: true },
+        { name: "Traffic Racer", url: "https://www.crazygames.com/embed/traffic-racer", cat: "Racing", isNew: true },
+        { name: "Road Fury", url: "https://www.crazygames.com/embed/road-fury", cat: "Racing", isNew: true },
+        { name: "Rocket Soccer Derby", url: "https://www.crazygames.com/embed/rocket-soccer-derby", cat: "Racing", isNew: true },
+        { name: "Hill Climb Racing", url: "https://www.crazygames.com/embed/hill-climb-racing", cat: "Racing", isNew: true },
+        { name: "Drift Hunters Pro", url: "https://drifthunters.io", cat: "Racing", isNew: true },
+        { name: "City Car Stunt 4", url: "https://www.crazygames.com/embed/city-car-stunt-4", cat: "Racing", isNew: true },
+
+        // Strategy / Tower Defense
+        { name: "Kingdom Rush", url: "https://www.crazygames.com/embed/kingdom-rush", cat: "Strategy", isNew: true },
+        { name: "Kingdom Rush Frontiers", url: "https://www.crazygames.com/embed/kingdom-rush-frontiers", cat: "Strategy", isNew: true },
+        { name: "Kingdom Rush Origins", url: "https://www.crazygames.com/embed/kingdom-rush-origins", cat: "Strategy", isNew: true },
+        { name: "Stick War Legacy", url: "https://www.crazygames.com/embed/stick-war-legacy", cat: "Strategy", isNew: true },
+        { name: "Stick War 3", url: "https://www.crazygames.com/embed/stick-war-3", cat: "Strategy", isNew: true },
+        { name: "Swords and Souls", url: "https://www.crazygames.com/embed/swords-and-souls", cat: "Strategy", isNew: true },
+        { name: "Mini Militia", url: "https://www.crazygames.com/embed/mini-militia-doodle-army-2", cat: "Strategy", isNew: true },
+        { name: "Age of War 2", url: "https://www.crazygames.com/embed/age-of-war-2", cat: "Strategy", isNew: true },
+        { name: "The Impossible Quiz", url: "https://www.crazygames.com/embed/the-impossible-quiz", cat: "Puzzle", isNew: true },
+        { name: "Orb It", url: "https://www.crazygames.com/embed/orb-it", cat: "Puzzle", isNew: true },
+
+        // Puzzle
+        { name: "2048", url: "https://play2048.co", cat: "Puzzle", isNew: true },
+        { name: "2048 Cupcakes", url: "https://www.crazygames.com/embed/2048-cupcakes", cat: "Puzzle", isNew: true },
+        { name: "Wordle", url: "https://wordlegame.org", cat: "Puzzle", isNew: true },
+        { name: "Unblock Me", url: "https://www.crazygames.com/embed/unblock-it", cat: "Puzzle", isNew: true },
+        { name: "Mahjong Classic", url: "https://www.crazygames.com/embed/mahjong-classic", cat: "Puzzle", isNew: true },
+        { name: "Chess", url: "https://www.chess.com/play/online", cat: "Puzzle", isNew: true },
+        { name: "Sudoku", url: "https://sudoku.com", cat: "Puzzle", isNew: true },
+        { name: "Tetris", url: "https://tetris.com/play-tetris", cat: "Puzzle", isNew: true },
+        { name: "Minesweeper", url: "https://minesweeper.online", cat: "Puzzle", isNew: true },
+        { name: "Line Rider", url: "https://www.linerider.com", cat: "Puzzle", isNew: true },
+
+        // Sports
+        { name: "8 Ball Pool", url: "https://www.crazygames.com/embed/8-ball-billiards-classic", cat: "Sports", isNew: true },
+        { name: "Mini Golf", url: "https://www.crazygames.com/embed/mini-golf-club", cat: "Sports", isNew: true },
+        { name: "Penalty Shootout", url: "https://www.crazygames.com/embed/penalty-shooters-2", cat: "Sports", isNew: true },
+        { name: "Doodle Cricket", url: "https://www.crazygames.com/embed/doodle-cricket", cat: "Sports", isNew: true },
+        { name: "Stickman Soccer", url: "https://www.crazygames.com/embed/stickman-soccer-2018", cat: "Sports", isNew: true },
+        { name: "Free Kick Football", url: "https://www.crazygames.com/embed/free-kick-football", cat: "Sports", isNew: true },
+        { name: "Volley Random", url: "https://www.crazygames.com/embed/volley-random", cat: "Sports", isNew: true },
+        { name: "Tennis Masters", url: "https://www.crazygames.com/embed/tennis-masters", cat: "Sports", isNew: true },
+
+        // Action / Adventure
+        { name: "Fleeing the Complex", url: "https://www.crazygames.com/embed/fleeing-the-complex", cat: "Action", isNew: true },
+        { name: "Infiltrating the Airship", url: "https://www.crazygames.com/embed/infiltrating-the-airship", cat: "Action", isNew: true },
+        { name: "Escaping the Prison", url: "https://www.crazygames.com/embed/escaping-the-prison", cat: "Action", isNew: true },
+        { name: "Stealing the Diamond", url: "https://www.crazygames.com/embed/stealing-the-diamond", cat: "Action", isNew: true },
+        { name: "Robbing the Bank", url: "https://www.crazygames.com/embed/robbing-the-bank", cat: "Action", isNew: true },
+        { name: "Henry Stickmin Collection", url: "https://www.crazygames.com/embed/completing-the-mission", cat: "Action", isNew: true },
+        { name: "Boxhead 2Play", url: "https://www.crazygames.com/embed/boxhead-2play-rooms", cat: "Action", isNew: true },
+        { name: "The Last Stand", url: "https://www.crazygames.com/embed/the-last-stand-2", cat: "Action", isNew: true },
+        { name: "Earn to Die", url: "https://www.crazygames.com/embed/earn-to-die", cat: "Action", isNew: true },
+        { name: "Earn to Die 2", url: "https://www.crazygames.com/embed/earn-to-die-2", cat: "Action", isNew: true },
+        { name: "Jacksmith", url: "https://www.crazygames.com/embed/jacksmith", cat: "Action", isNew: true },
+        { name: "Strike Force Heroes", url: "https://www.crazygames.com/embed/strike-force-heroes", cat: "Action", isNew: true },
+        { name: "Strike Force Heroes 2", url: "https://www.crazygames.com/embed/strike-force-heroes-2", cat: "Action", isNew: true },
+        { name: "Raze", url: "https://www.crazygames.com/embed/raze", cat: "Action", isNew: true },
+        { name: "Raze 2", url: "https://www.crazygames.com/embed/raze-2", cat: "Action", isNew: true },
+
+        // Runner / Endless
+        { name: "Temple Run", url: "https://www.crazygames.com/embed/temple-run-2", cat: "Runner", isNew: true },
+        { name: "Flappy Bird", url: "https://flappybird.io", cat: "Runner", isNew: true },
+        { name: "Tunnel Rush", url: "https://www.crazygames.com/embed/tunnel-rush", cat: "Runner", isNew: true },
+        { name: "Tunnel Rush 2", url: "https://www.crazygames.com/embed/tunnel-rush-2", cat: "Runner", isNew: true },
+        { name: "Smash Road", url: "https://www.crazygames.com/embed/smash-road-race", cat: "Runner", isNew: true },
+        { name: "Jetpack Joyride", url: "https://www.crazygames.com/embed/jetpack-joyride", cat: "Runner", isNew: true },
+        { name: "Dino Game", url: "https://chromedino.com", cat: "Runner", isNew: true },
+        { name: "1-Bit Ninja", url: "https://www.crazygames.com/embed/1-bit-ninja", cat: "Runner", isNew: true },
+
+        // Clicker / Idle
+        { name: "Clicker Heroes", url: "https://script.google.com/macros/s/AKfycbxiYJVxz4HPt3JTbXtgX7swXZ734vV_Wr4QcqmQrBMydobF0wIOH_eqQx9HFVCkH4cX/exec", cat: "Clicker" },
+        { name: "Idle Breakout", url: "https://koalabeast.com/idlebreakout/", cat: "Clicker", isNew: true },
+        { name: "Adventure Capitalist", url: "https://www.crazygames.com/embed/adventure-capitalist", cat: "Clicker", isNew: true },
+        { name: "Idle Miner", url: "https://www.crazygames.com/embed/idle-mining-empire", cat: "Clicker", isNew: true },
+        { name: "Bitcoin Clicker", url: "https://www.crazygames.com/embed/bitcoin-clicker", cat: "Clicker", isNew: true },
+
+        // Survival / Sandbox
+        { name: "Minecraft Classic", url: "https://classic.minecraft.net", cat: "Survival", isNew: true },
+        { name: "Survivalcraft", url: "https://www.crazygames.com/embed/survivalcraft", cat: "Survival", isNew: true },
+        { name: "The Wild 8", url: "https://www.crazygames.com/embed/the-wild-8", cat: "Survival", isNew: true },
+        { name: "Deadswitch 3", url: "https://www.crazygames.com/embed/deadswitch-3", cat: "Survival", isNew: true },
+
+        // Multiplayer
+        { name: "Skribbl.io", url: "https://skribbl.io", cat: "Multiplayer", isNew: true },
+        { name: "Gartic Phone", url: "https://garticphone.com", cat: "Multiplayer", isNew: true },
+        { name: "Kahoot", url: "https://kahoot.it", cat: "Multiplayer", isNew: true },
+        { name: "Jackbox Games", url: "https://jackbox.tv", cat: "Multiplayer", isNew: true },
+        { name: "Gimkit", url: "https://www.gimkit.com/play", cat: "Multiplayer", isNew: true },
+        { name: "Quizlet Live", url: "https://quizlet.com/live", cat: "Multiplayer", isNew: true },
+        { name: "Tank Trouble", url: "https://www.crazygames.com/embed/tank-trouble", cat: "Multiplayer", isNew: true },
+        { name: "Battleship Online", url: "https://www.crazygames.com/embed/battleship-online", cat: "Multiplayer", isNew: true },
+
+        // RPG / Adventure
+        { name: "Dungeon Quest", url: "https://www.crazygames.com/embed/dungeon-quest", cat: "RPG", isNew: true },
+        { name: "Soul Knight Prequel", url: "https://www.crazygames.com/embed/soul-knight-prequel", cat: "RPG", isNew: true },
+        { name: "Bit Heroes", url: "https://www.crazygames.com/embed/bit-heroes", cat: "RPG", isNew: true },
+        { name: "Adventure Story", url: "https://www.crazygames.com/embed/adventure-story", cat: "RPG", isNew: true },
+        { name: "Dragon Ball Fierce Fighting", url: "https://www.crazygames.com/embed/dragon-ball-fierce-fighting-22", cat: "Fighting", isNew: true },
+        { name: "Naruto Arena", url: "https://www.crazygames.com/embed/naruto-arena", cat: "Fighting", isNew: true },
+        { name: "One Piece Fighting", url: "https://www.crazygames.com/embed/one-piece-fighting-spirit", cat: "Fighting", isNew: true },
+        { name: "Mortal Kombat Karnage", url: "https://www.crazygames.com/embed/mortal-kombat-karnage", cat: "Fighting", isNew: true },
+
+        // Retro Arcade
+        { name: "Pac-Man", url: "https://www.crazygames.com/embed/pacman", cat: "Arcade", isNew: true },
+        { name: "Space Invaders", url: "https://www.crazygames.com/embed/space-invaders", cat: "Arcade", isNew: true },
+        { name: "Galaga", url: "https://www.crazygames.com/embed/galaga", cat: "Arcade", isNew: true },
+        { name: "Snake", url: "https://www.crazygames.com/embed/snake-io", cat: "Arcade", isNew: true },
+        { name: "Bomberman", url: "https://www.crazygames.com/embed/bomber-friends", cat: "Arcade", isNew: true },
+        { name: "Asteroids", url: "https://www.crazygames.com/embed/asteroids", cat: "Arcade", isNew: true },
+        { name: "Breakout", url: "https://www.crazygames.com/embed/classic-breakout", cat: "Arcade", isNew: true },
+        { name: "Frogger", url: "https://www.crazygames.com/embed/frogger-in-toy-town", cat: "Arcade", isNew: true },
+        { name: "Pinball", url: "https://www.crazygames.com/embed/pinball", cat: "Arcade", isNew: true },
+
+        // More Fan Faves
+        { name: "Vampire Survivors", url: "https://poncle.itch.io/vampire-survivors", cat: "Action", isNew: true },
+        { name: "Stumble Guys", url: "https://www.crazygames.com/embed/stumble-guys", cat: "Action", isNew: true },
+        { name: "Crowd City", url: "https://www.crazygames.com/embed/crowd-city", cat: "IO", isNew: true },
+        { name: "Paper Minecraft", url: "https://scratch.mit.edu/projects/10128407/embed", cat: "Survival", isNew: true },
+        { name: "Wordle Unlimited", url: "https://wordleunlimited.com", cat: "Puzzle", isNew: true },
+        { name: "Connections", url: "https://connections.swellgarfo.com", cat: "Puzzle", isNew: true },
+        { name: "Globle", url: "https://globle-game.com", cat: "Puzzle", isNew: true },
+        { name: "Spooky Dash", url: "https://www.crazygames.com/embed/spooky-dash", cat: "Platformer", isNew: true },
+        { name: "Getaway Shootout", url: "https://getawayshootout.com", cat: "Action", isNew: true },
+        { name: "Rooftop Snipers", url: "https://www.crazygames.com/embed/rooftop-snipers", cat: "Action", isNew: true },
+        { name: "Rooftop Snipers 2", url: "https://www.crazygames.com/embed/rooftop-snipers-2", cat: "Action", isNew: true },
+        { name: "Head Soccer", url: "https://www.crazygames.com/embed/head-soccer", cat: "Sports", isNew: true },
+        { name: "Head Basketball", url: "https://www.crazygames.com/embed/head-basketball", cat: "Sports", isNew: true },
+        { name: "Penalty Kick Online", url: "https://www.crazygames.com/embed/penalty-kick-online", cat: "Sports", isNew: true },
+        { name: "Rocket Bot Royale", url: "https://rocketbotroyale.winterpixel.io", cat: "Action", isNew: true },
+        { name: "Tanki Online", url: "https://tankionline.com", cat: "Action", isNew: true },
+        { name: "Worms Zone", url: "https://wormszone.io", cat: "IO", isNew: true },
+        { name: "Wings.io", url: "https://wings.io", cat: "IO", isNew: true },
+        { name: "Brutes.io", url: "https://brutes.io", cat: "IO", isNew: true },
+        { name: "Superhex.io", url: "https://superhex.io", cat: "IO", isNew: true },
+        { name: "Territorial.io", url: "https://territorial.io", cat: "IO", isNew: true },
+        { name: "Aground", url: "https://www.crazygames.com/embed/aground", cat: "Survival", isNew: true },
+        { name: "Brutal.io", url: "https://brutal.io", cat: "IO", isNew: true },
+        { name: "Little Big Snake", url: "https://littlebigsnake.com", cat: "IO", isNew: true },
+        { name: "Narwhale.io", url: "https://narwhale.io", cat: "IO", isNew: true },
+        { name: "Yohoho.io", url: "https://yohoho.io", cat: "IO", isNew: true },
+        { name: "Stomped.io", url: "https://stomped.io", cat: "IO", isNew: true },
+        { name: "Foes.io", url: "https://foes.io", cat: "IO", isNew: true },
+        { name: "Ev.io", url: "https://ev.io", cat: "Shooter", isNew: true },
     ];
 
     const gameGrid = document.getElementById('game-grid');
+    const countEl = document.getElementById('game-count');
+    const visibleEl = document.getElementById('visible-count');
 
-    games.forEach(game => {
-        gameGrid.appendChild(createCard(game));
+    countEl.textContent = `${games.length} Games Available`;
+
+    // Build category list
+    const cats = ['All', ...new Set(games.map(g => g.cat))].sort((a, b) => a === 'All' ? -1 : b === 'All' ? 1 : a.localeCompare(b));
+    const tabContainer = document.getElementById('category-tabs');
+    let activeCategory = 'All';
+
+    cats.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = 'tab' + (cat === 'All' ? ' active' : '');
+        btn.textContent = cat;
+        btn.onclick = () => {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+            activeCategory = cat;
+            filterItems();
+        };
+        tabContainer.appendChild(btn);
     });
+
+    // Render all cards
+    games.forEach(game => gameGrid.appendChild(createCard(game)));
+    updateCount();
 
     function createCard(item) {
         const card = document.createElement('div');
         card.className = 'card';
-        card.onclick = () => launch(item.url);
+        card.dataset.name = item.name.toLowerCase();
+        card.dataset.cat = item.cat;
+        card.onclick = () => launch(item.url, item.name);
 
-        const searchQuery = encodeURIComponent(item.name + " game app icon");
+        const searchQuery = encodeURIComponent(item.name + " game icon");
         const imgUrl = `https://tse2.mm.bing.net/th?q=${searchQuery}&w=400&h=300&c=7&rs=1&p=0`;
         const fallbackUrl = `https://placehold.co/400x300/111/00f3ff?text=${encodeURIComponent(item.name)}`;
 
         card.innerHTML = `
             <div class="card-thumb-container">
+                ${item.isNew ? '<span class="card-badge">New</span>' : ''}
                 <img src="${imgUrl}" class="card-thumb" onerror="this.src='${fallbackUrl}'" loading="lazy" alt="${item.name}">
             </div>
             <div class="card-info">
                 <div class="card-title">${item.name}</div>
+                <div class="card-category">${item.cat}</div>
             </div>
         `;
         return card;
     }
 
-    function launch(url) {
+    function launch(url, name) {
         const win = window.open('about:blank', '_blank');
-        if (!win) { alert("Pop-ups are blocked!"); return; }
+        if (!win) { alert("Pop-ups are blocked! Please allow pop-ups for this site."); return; }
         
         const html = `
             <!DOCTYPE html>
@@ -436,7 +663,7 @@
                 </style>
             </head>
             <body>
-                <iframe src="${url}" allowfullscreen></iframe>
+                <iframe src="${url}" allowfullscreen allow="autoplay; fullscreen"></iframe>
                 <script>
                     window.addEventListener('keydown', (e) => {
                         if (e.key === "Escape") window.location.replace("https://drive.google.com");
@@ -452,12 +679,24 @@
     function filterItems() {
         const input = document.getElementById('searchBar').value.toLowerCase();
         const cards = gameGrid.getElementsByClassName('card');
+        let shown = 0;
         for (let i = 0; i < cards.length; i++) {
-            const title = cards[i].querySelector('.card-title').innerText.toLowerCase();
-            cards[i].style.display = title.includes(input) ? "flex" : "none";
+            const nameMatch = cards[i].dataset.name.includes(input);
+            const catMatch = activeCategory === 'All' || cards[i].dataset.cat === activeCategory;
+            const visible = nameMatch && catMatch;
+            cards[i].style.display = visible ? "flex" : "none";
+            if (visible) shown++;
         }
+        updateCount(shown);
     }
 
+    function updateCount(shown) {
+        const total = games.length;
+        const s = shown !== undefined ? shown : total;
+        visibleEl.textContent = `${s} of ${total}`;
+    }
+
+    // Snow canvas
     const canvas = document.getElementById('snow-canvas');
     const ctx = canvas.getContext('2d');
     let width, height, flakes = [];
@@ -498,10 +737,7 @@
 
     function animate() {
         ctx.clearRect(0, 0, width, height);
-        for (let i = 0; i < flakes.length; i++) {
-            flakes[i].update();
-            flakes[i].draw();
-        }
+        for (let i = 0; i < flakes.length; i++) { flakes[i].update(); flakes[i].draw(); }
         requestAnimationFrame(animate);
     }
     animate();
@@ -510,6 +746,5 @@
         if(e.key === "Escape") window.location.replace("https://drive.google.com");
     });
 </script>
-
 </body>
 </html>
